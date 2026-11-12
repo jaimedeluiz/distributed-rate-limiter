@@ -1,0 +1,37 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: distributed-rate-limiter
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 2
+          max-wait: 1000ms
+
+ratelimiter:
+  enabled: true
+  # Default settings for rate limiting
+  default-capacity: 10
+  default-refill-rate: 2.0
+  # Rate limited paths (HandlerInterceptor fallback)
+  protected-paths:
+    - /api/v1/protected/**
+  # Header used for API-Key identification (falls back to client IP)
+  api-key-header: X-API-Key
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
