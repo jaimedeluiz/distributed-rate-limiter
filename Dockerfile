@@ -1,5 +1,5 @@
 # Stage 1: Build the artifact
-FROM maven:3.9.6-eclipse-temurin-17-alpine AS builder
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
 WORKDIR /workspace
 
 # Copy dependencies manifest first to leverage Docker layer caching
@@ -10,12 +10,12 @@ RUN mvn dependency:go-offline -B
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Stage 2: Minimal runtime image
-FROM eclipse-temurin:17-jre-alpine
+# Stage 2: Minimal multi-architecture runtime image (ARM64 & AMD64)
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
 # Non-root user for security best practices
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 USER appuser
 
 COPY --from=builder /workspace/target/*.jar app.jar
